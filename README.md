@@ -2,6 +2,14 @@
 
 A comprehensive documentation repository for CloudOps best practices, architectures, and operational procedures.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Repository Structure](#repository-structure)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+- [Documentation Standards](#documentation-standards)
+
 ## Overview
 
 This repository contains curated documentation and architectural guidance for CloudOps teams. Documentation is written in Markdown with diagrams created using Mermaid to ensure clarity and accessibility.
