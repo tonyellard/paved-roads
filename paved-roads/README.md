@@ -22,7 +22,7 @@ Paved roads eliminate the need to solve the same problems repeatedly. By documen
 ## Table of Contents
 
 ### Infrastructure Paved Roads
-*Coming soon - infrastructure solutions and patterns*
+- [AWS ECS Application Deployment with CodePipeline](aws-ecs-application-deployment.md) - Complete CI/CD pipeline for containerized applications on ECS Fargate
 
 ### Platform Paved Roads
 *Coming soon - platform engineering solutions*
