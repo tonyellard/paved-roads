@@ -19,39 +19,9 @@ This paved road provides a complete deployment pipeline for containerized applic
 
 ## Architecture Diagram
 
-```mermaid
-graph LR
-    Dev[Developer] -->|git push| GH[GitHub Repository<br/>buildspec.yml<br/>Dockerfile]
-    
-    GH -->|Trigger on commit| CP_Dev[CodePipeline<br/>deployments-dev account]
-    GH -->|Trigger on commit| CP_Test[CodePipeline<br/>deployments-test account]
-    GH -->|Trigger on commit| CP_Prod[CodePipeline<br/>deployments-prod account]
-    
-    CP_Dev --> CB_Dev[CodeBuild<br/>Build Container]
-    CP_Test --> CB_Test[CodeBuild<br/>Build Container]
-    CP_Prod --> CB_Prod[CodeBuild<br/>Build Container]
-    
-    CB_Dev --> ECR[ECR Repository<br/>workloads account]
-    CB_Test --> ECR
-    CB_Prod --> ECR
-    
-    ECR --> ECS[ECS Cluster Fargate<br/>workloads account]
-    
-    ECS --> SVC[ECS Service<br/>Running Tasks ARM64]
-    
-    SVC --> TG[Target Group]
-    TG --> ALB[Application Load Balancer<br/>SSL Termination]
-    
-    ALB --> CF[Cloudflare<br/>CDN + WAF<br/>SSL Termination]
-    
-    CF --> User[End Users]
-    
-    style GH fill:#f9f,stroke:#333,stroke-width:2px
-    style ECR fill:#ff9,stroke:#333,stroke-width:2px
-    style ECS fill:#9f9,stroke:#333,stroke-width:2px
-    style CF fill:#99f,stroke:#333,stroke-width:2px
-    style ALB fill:#f99,stroke:#333,stroke-width:2px
-```
+![AWS ECS Deployment Flow](diagrams/aws-ecs-deployment-flow.mmd)
+
+View the [architecture diagram source](diagrams/aws-ecs-deployment-flow.mmd) in Mermaid format.
 
 ## Requirements
 
@@ -91,82 +61,33 @@ app-repository/
 1. Ensure repository contains `Dockerfile` and `buildspec.yml`
 2. Configure branch protection rules for environment branches
 3. Set up appropriate branching strategy (dev/test/stage/prod)
+4. Review sample files in the [samples directory](samples/)
 
-### Step 2: AWS Account Setup
+### Step 2: Infrastructure Provisioning
+
+CloudOps will provision all AWS infrastructure using standard Terraform modules and templates, including:
 
 **Per Environment (in deployments-{env} accounts):**
-
-1. Create CodePipeline pipeline
-   - Source: GitHub repository (specific branch)
-   - Build: CodeBuild project
-   - Deploy: ECS service update
-
-2. Create CodeBuild project
-   - Environment: AWS managed image for Docker builds
-   - Buildspec: Use `buildspec.yml` from repository
-   - Permissions: Push to ECR in workloads account
+- CodePipeline pipeline configured for the appropriate branch
+- CodeBuild project with ECR push permissions
 
 **In Workloads Account:**
+- ECR repository with image scanning and lifecycle policies
+- ECS Cluster with Fargate capacity provider
+- ECS Task Definition (ARM64 architecture by default)
+- ECS Service with sensible defaults
+- Application Load Balancer with target group and SSL configuration
+- Cloudflare DNS and WAF configuration (for external applications)
 
-3. Create ECR repository
-   - Configure image scanning
-   - Set lifecycle policies for image retention
-   - Grant push permissions to deployment account CodeBuild roles
-
-4. Create ECS Cluster
-   - Fargate capacity provider
-   - Container Insights enabled (recommended)
-
-5. Create ECS Task Definition
-   - **Architecture**: ARM64 (preferred, unless application incompatible)
-   - CPU and memory allocations based on application needs
-   - Image: Reference ECR repository
-   - Logging: CloudWatch Logs
-
-6. Create ECS Service
-   - Launch type: Fargate
-   - Desired count: Based on environment and scaling needs
-   - Load balancer: Attach to target group
-   - Deployment configuration: Rolling updates
-
-7. Create Application Load Balancer
-   - Scheme: Internet-facing or internal
-   - Target group: Forward to ECS service tasks
-   - Health checks: Configure appropriate path and thresholds
-   - Listener: HTTPS (port 443) with SSL certificate
-
-8. Configure SSL/TLS
-   - Request ACM certificate for domain
-   - Attach to ALB HTTPS listener
-   - Configure security policy (TLS 1.2+)
-
-### Step 3: Cloudflare Configuration (External Applications)
-
-1. Add DNS record pointing to ALB
-   - Type: CNAME
-   - Name: `{environment}-{app-name}`
-   - Target: ALB DNS name
-   - Proxy status: Enabled (orange cloud)
-
-2. Configure SSL/TLS
-   - Mode: Full (strict) or Full
-   - Edge certificates: Automatic
-
-3. Configure Caching
-   - **Default**: Enabled (unless engineering team requests otherwise)
-   - Cache rules based on application requirements
-   - Respect origin headers as appropriate
-
-4. Enable WAF
-   - Apply managed rulesets
-   - Configure custom rules as needed
-   - Set up rate limiting if required
+**Note**: Contact CloudOps team to initiate infrastructure provisioning for your application.
 
 ## Configuration
 
 ### URL Pattern
 
-External applications follow the pattern:
+Applications follow the URL pattern:
+
+**Non-Production Environments:**
 ```
 {environment}-{app-name}.{domain}.{com|io}
 ```
@@ -174,7 +95,17 @@ External applications follow the pattern:
 Examples:
 - `dev-api.example.com`
 - `test-webapp.company.io`
-- `prod-service.example.com`
+- `stage-service.example.com`
+
+**Production Environment:**
+```
+{app-name}.{domain}.{com|io}
+```
+
+Examples:
+- `api.example.com`
+- `webapp.company.io`
+- `service.example.com`
 
 ### Environment Variables
 
@@ -325,36 +256,12 @@ Set in ECS Task Definition:
 
 ### Sample Files
 
-**Sample buildspec.yml:**
-```yaml
-version: 0.2
+Reference sample files for a basic Python application:
 
-phases:
-  pre_build:
-    commands:
-      - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=${COMMIT_HASH:=latest}
-  build:
-    commands:
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-      - docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-      - docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT
-  post_build:
-    commands:
-      - echo Build completed on `date`
-      - echo Pushing the Docker images...
-      - docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-      - docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT
-      - echo Writing image definitions file...
-      - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG > imagedefinitions.json
+- [buildspec.yml](samples/buildspec.yml) - CodeBuild build specification
+- [Dockerfile](samples/Dockerfile) - Container image build instructions
 
-artifacts:
-  files: imagedefinitions.json
-```
+**Note**: These are basic examples and should be customized for your specific application requirements.
 
 ---
 
