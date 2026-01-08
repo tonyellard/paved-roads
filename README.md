@@ -5,6 +5,7 @@ A comprehensive documentation repository for CloudOps best practices, architectu
 ## Table of Contents
 
 - [Overview](overview.md) - Project overview and getting started
+- [Paved Roads](paved-roads/README.md) - Design documents for proven CloudOps solutions
 - [Repository Setup & Configuration](#repository-setup--configuration)
 - [Contributing Guidelines](#contributing-guidelines)
 
