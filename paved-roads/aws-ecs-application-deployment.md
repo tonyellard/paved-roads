@@ -20,30 +20,30 @@ This paved road provides a complete deployment pipeline for containerized applic
 ## Architecture Diagram
 
 ```mermaid
+%%{init: {'themeVariables': { 'fontSize': '12px' }}}%%
 graph LR
-   Dev[Developer] -->|git push| GH[GitHub Repository<br/>buildspec.yml<br/>Dockerfile]
-    
-   GH -->|Trigger on env branch commit| CP[CodePipeline + CodeBuild in deployments env account]
-    
-   CP --> ECR[ECR Repository<br/>workloads env account]
-    
-   ECR --> ECS[ECS Cluster Fargate<br/>workloads env account]
-    
-   ECS --> SVC[ECS Service<br/>ARM64 tasks]
-    
-   SVC --> TG[Target Group]
-   TG --> ALB[Application Load Balancer<br/>SSL Termination]
-    
-   ALB --> CF[Cloudflare<br/>CDN + WAF<br/>SSL Termination]
-    
-   CF --> User[End Users]
-    
-   style GH fill:#f9f,stroke:#333,stroke-width:2px,color:#000
+   Dev[Developer] -->|git push| GH[GitHub repo with Dockerfile and buildspec]
+   GH -->|env branch commit| CP[CodePipeline + CodeBuild (deployments env account)]
+
+   CP --> ECR[ECR repo]
+
+   subgraph Workloads env account
+      ECR --> ECS[ECS cluster (Fargate)]
+      ECS --> SVC[ECS service (ARM64 tasks)]
+   end
+
+   SVC --> TG[Target group]
+   TG --> ALB[ALB (SSL termination)]
+   ALB --> CF[Cloudflare (CDN + WAF)]
+   CF --> User[End users]
+
+   style GH fill:#f3c2f3,stroke:#333,stroke-width:2px,color:#000
    style CP fill:#ffdfba,stroke:#333,stroke-width:2px,color:#000
-   style ECR fill:#ff9,stroke:#333,stroke-width:2px,color:#000
-   style ECS fill:#9f9,stroke:#333,stroke-width:2px,color:#000
-   style CF fill:#99f,stroke:#333,stroke-width:2px,color:#000
-   style ALB fill:#f99,stroke:#333,stroke-width:2px,color:#000
+   style ECR fill:#ffeb99,stroke:#333,stroke-width:2px,color:#000
+   style ECS fill:#c3f7c3,stroke:#333,stroke-width:2px,color:#000
+   style SVC fill:#c3f7c3,stroke:#333,stroke-width:2px,color:#000
+   style ALB fill:#f9c0c0,stroke:#333,stroke-width:2px,color:#000
+   style CF fill:#c0c9ff,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ## Requirements
