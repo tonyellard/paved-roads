@@ -25,9 +25,9 @@ graph LR
     
    GH -->|Trigger on env branch commit| CP[CodePipeline + CodeBuild in deployments env account]
     
-   CP --> ECR[ECR Repository<br/>workloads-{env} account]
+   CP --> ECR[ECR Repository<br/>workloads env account]
     
-   ECR --> ECS[ECS Cluster Fargate<br/>workloads-{env} account]
+   ECR --> ECS[ECS Cluster Fargate<br/>workloads env account]
     
    ECS --> SVC[ECS Service<br/>ARM64 tasks]
     
