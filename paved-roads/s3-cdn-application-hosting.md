@@ -42,8 +42,8 @@ graph TD
     end
 
     subgraph Workloads env account
-        S3B[S3 bucket (versioning + encryption)]
-        CFN[CloudFront distribution]
+      S3B[S3 bucket with versioning and encryption]
+      CFN[CloudFront distribution]
     end
 
     CF --> CFN
