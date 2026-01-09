@@ -25,16 +25,17 @@ graph LR
    Dev[Developer] -->|git push| GH[GitHub repo with Dockerfile and buildspec]
    GH -->|env branch commit| CP[CodePipeline and CodeBuild deployments env account]
 
-   CP --> ECR[ECR repo]
+   CP --> ECR
 
-   subgraph Workloads env account
-      ECR --> ECS[ECS cluster (Fargate)]
-      ECS --> SVC[ECS service (ARM64 tasks)]
+   subgraph workloads_env_account [Workloads env account]
+      ECR[ECR repo]
+      ECR --> ECS[ECS cluster Fargate]
+      ECS --> SVC[ECS service ARM64 tasks]
    end
 
    SVC --> TG[Target group]
-   TG --> ALB[ALB (SSL termination)]
-   ALB --> CF[Cloudflare (CDN + WAF)]
+   TG --> ALB[ALB SSL termination]
+   ALB --> CF[Cloudflare CDN + WAF]
    CF --> User[End users]
 
    style GH fill:#f3c2f3,stroke:#333,stroke-width:2px,color:#000
