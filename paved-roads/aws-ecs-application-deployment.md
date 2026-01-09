@@ -44,12 +44,9 @@ graph TD
       CF[DNS and WAF]
    end
 
-   subgraph Network
+   subgraph Workloads account
       ALB[ALB with HTTPS]
       TG[Target group]
-   end
-
-   subgraph Workloads account
       subgraph ECS Cluster
          SVC[ECS service]
          TASKS[Tasks on Fargate ARM64]
