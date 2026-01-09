@@ -23,21 +23,13 @@ This paved road provides a complete deployment pipeline for containerized applic
 graph LR
    Dev[Developer] -->|git push| GH[GitHub Repository<br/>buildspec.yml<br/>Dockerfile]
     
-   GH -->|Trigger on commit| CP_Dev[CodePipeline<br/>deployments-dev account]
-   GH -->|Trigger on commit| CP_Test[CodePipeline<br/>deployments-test account]
-   GH -->|Trigger on commit| CP_Prod[CodePipeline<br/>deployments-prod account]
+   GH -->|Trigger on commit (env branch)| CP[CodePipeline / CodeBuild<br/>deployments-{env} account]
     
-   CP_Dev --> CB_Dev[CodeBuild<br/>Build Container]
-   CP_Test --> CB_Test[CodeBuild<br/>Build Container]
-   CP_Prod --> CB_Prod[CodeBuild<br/>Build Container]
+   CP --> ECR[ECR Repository<br/>workloads-{env} account]
     
-   CB_Dev --> ECR[ECR Repository<br/>workloads account]
-   CB_Test --> ECR
-   CB_Prod --> ECR
+   ECR --> ECS[ECS Cluster Fargate<br/>workloads-{env} account]
     
-   ECR --> ECS[ECS Cluster Fargate<br/>workloads account]
-    
-   ECS --> SVC[ECS Service<br/>Running Tasks ARM64]
+   ECS --> SVC[ECS Service<br/>ARM64 tasks]
     
    SVC --> TG[Target Group]
    TG --> ALB[Application Load Balancer<br/>SSL Termination]
@@ -46,11 +38,12 @@ graph LR
     
    CF --> User[End Users]
     
-   style GH fill:#f9f,stroke:#333,stroke-width:2px
-   style ECR fill:#ff9,stroke:#333,stroke-width:2px
-   style ECS fill:#9f9,stroke:#333,stroke-width:2px
-   style CF fill:#99f,stroke:#333,stroke-width:2px
-   style ALB fill:#f99,stroke:#333,stroke-width:2px
+   style GH fill:#f9f,stroke:#333,stroke-width:2px,color:#000
+   style CP fill:#ffdfba,stroke:#333,stroke-width:2px,color:#000
+   style ECR fill:#ff9,stroke:#333,stroke-width:2px,color:#000
+   style ECS fill:#9f9,stroke:#333,stroke-width:2px,color:#000
+   style CF fill:#99f,stroke:#333,stroke-width:2px,color:#000
+   style ALB fill:#f99,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ## Requirements
