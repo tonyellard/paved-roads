@@ -19,32 +19,56 @@ This paved road provides a complete deployment pipeline for containerized applic
 
 ## Architecture Diagram
 
+### Deployment Flow
+
 ```mermaid
 %%{init: {'themeVariables': { 'fontSize': '12px' }}}%%
 graph LR
-   Dev[Developer] -->|git push| GH[GitHub repo with Dockerfile and buildspec]
-   GH -->|env branch commit| CP[CodePipeline and CodeBuild deployments env account]
-
-   CP --> ECR
-
-   subgraph workloads_env_account [Workloads env account]
-      ECR[ECR repo]
-      ECR --> ECS[ECS cluster Fargate]
-      ECS --> SVC[ECS service ARM64 tasks]
-   end
-
-   SVC --> TG[Target group]
-   TG --> ALB[ALB SSL termination]
-   ALB --> CF[Cloudflare CDN + WAF]
-   CF --> User[End users]
+   Dev[Developer] --> GH[GitHub repo]
+   GH --> CP[CodePipeline and CodeBuild]
+   CP --> ECR[ECR image push]
+   ECR --> Deploy[Deploy to ECS service]
 
    style GH fill:#f3c2f3,stroke:#333,stroke-width:2px,color:#000
    style CP fill:#ffdfba,stroke:#333,stroke-width:2px,color:#000
    style ECR fill:#ffeb99,stroke:#333,stroke-width:2px,color:#000
-   style ECS fill:#c3f7c3,stroke:#333,stroke-width:2px,color:#000
-   style SVC fill:#c3f7c3,stroke:#333,stroke-width:2px,color:#000
-   style ALB fill:#f9c0c0,stroke:#333,stroke-width:2px,color:#000
+   style Deploy fill:#c3f7c3,stroke:#333,stroke-width:2px,color:#000
+```
+
+### Runtime Architecture
+
+```mermaid
+%%{init: {'themeVariables': { 'fontSize': '12px' }}}%%
+graph TD
+   subgraph Cloudflare
+      CF[DNS and WAF]
+   end
+
+   subgraph Network
+      ALB[ALB with HTTPS]
+      TG[Target group]
+   end
+
+   subgraph Workloads account
+      subgraph ECS Cluster
+         SVC[ECS service]
+         TASKS[Tasks on Fargate ARM64]
+      end
+      ECR[ECR image repo]
+   end
+
+   CF --> ALB
+   ALB --> TG
+   TG --> SVC
+   SVC --> TASKS
+   ECR -.-> TASKS
+
    style CF fill:#c0c9ff,stroke:#333,stroke-width:2px,color:#000
+   style ALB fill:#f9c0c0,stroke:#333,stroke-width:2px,color:#000
+   style TG fill:#f9c0c0,stroke:#333,stroke-width:2px,color:#000
+   style SVC fill:#c3f7c3,stroke:#333,stroke-width:2px,color:#000
+   style TASKS fill:#c3f7c3,stroke:#333,stroke-width:2px,color:#000
+   style ECR fill:#ffeb99,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ## Requirements
