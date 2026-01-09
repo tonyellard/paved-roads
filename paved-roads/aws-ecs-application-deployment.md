@@ -23,7 +23,7 @@ This paved road provides a complete deployment pipeline for containerized applic
 graph LR
    Dev[Developer] -->|git push| GH[GitHub Repository<br/>buildspec.yml<br/>Dockerfile]
     
-   GH -->|Trigger on commit (env branch)| CP[CodePipeline / CodeBuild<br/>deployments-{env} account]
+   GH -->|Trigger on env branch commit| CP[CodePipeline / CodeBuild<br/>deployments-{env} account]
     
    CP --> ECR[ECR Repository<br/>workloads-{env} account]
     
