@@ -44,7 +44,7 @@ graph TD
     subgraph Workloads env account
         ALB[ALB with HTTPS]
         TG[Target group]
-        LFN[Lambda function (container image)]
+        LFN[Lambda function with container image]
         ECR[ECR image repo]
     end
 
