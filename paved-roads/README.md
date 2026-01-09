@@ -24,6 +24,7 @@ Paved roads eliminate the need to solve the same problems repeatedly. By documen
 ### Infrastructure Paved Roads
 - [AWS ECS Application Deployment with CodePipeline](aws-ecs-application-deployment.md) - Complete CI/CD pipeline for containerized applications on ECS Fargate
 - [S3 CDN Application Hosting](s3-cdn-application-hosting.md) - Static apps/assets on S3 with CloudFront and Cloudflare
+- [Containerized Lambda Application Deployment](lambda-containerized-application.md) - Lambda using container images from ECR
 
 ### Platform Paved Roads
 *Coming soon - platform engineering solutions*

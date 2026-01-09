@@ -1,0 +1,2 @@
+# Example dependency stub
+# Add your Python package dependencies here
