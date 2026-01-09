@@ -23,7 +23,7 @@ This paved road provides a complete deployment pipeline for containerized applic
 %%{init: {'themeVariables': { 'fontSize': '12px' }}}%%
 graph LR
    Dev[Developer] -->|git push| GH[GitHub repo with Dockerfile and buildspec]
-   GH -->|env branch commit| CP[CodePipeline + CodeBuild (deployments env account)]
+   GH -->|env branch commit| CP[CodePipeline and CodeBuild deployments env account]
 
    CP --> ECR[ECR repo]
 
